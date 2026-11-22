@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game Cacing 💩 - RJRM.GAMES</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1120;
+            background-image:
+                radial-gradient(circle at 18% 12%, rgba(16, 185, 129, 0.11), transparent 42%),
+                radial-gradient(circle at 82% 85%, rgba(250, 204, 21, 0.08), transparent 45%),
+                linear-gradient(180deg, #0b1120 0%, #111827 100%);
+            touch-action: none;
+            overflow: hidden;
+            color: #f8fafc;
+        }
+        .pixel-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.78);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            box-shadow: 0 14px 32px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        canvas {
+            background-color: #1e293b;
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(148, 163, 184, 0.12);
+            display: block;
+            width: 100%;
+            height: auto;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+            border: 2px solid rgba(148, 163, 184, 0.25);
+        }
+        canvas.turbo-active {
+            border-color: #facc15;
+            box-shadow: 0 0 28px rgba(250, 204, 21, 0.38), 0 20px 40px -12px rgba(0, 0, 0, 0.75);
+        }
+        canvas.hit-flash {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 32px rgba(239, 68, 68, 0.65) !important;
+        }
+        .pixel-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        canvas {
+            background-color: #2d3748;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+            display: block;
+            width: 100%;
+            height: auto;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+            border: 3px solid #4a5568;
+        }
+        canvas.turbo-active {
+            border-color: #ecc94b;
+            box-shadow: 0 0 25px rgba(236, 201, 75, 0.7);
+        }
+        canvas.hit-flash {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 28px rgba(239, 68, 68, 0.9) !important;
+        }
+        /* Animasi getar saat menabrak */
+        @keyframes shakeHit {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            15% { transform: translate(-8px, -4px) rotate(-1deg); }
+            30% { transform: translate(8px, 4px) rotate(1deg); }
+            45% { transform: translate(-7px, 5px) rotate(-0.8deg); }
+            60% { transform: translate(7px, -4px) rotate(0.8deg); }
+            75% { transform: translate(-4px, 2px) rotate(-0.4deg); }
+            90% { transform: translate(4px, -2px) rotate(0.4deg); }
+        }
+        .shake-active {
+            animation: shakeHit 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+        /* Animasi masuk layar Game Over */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.85); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .game-over-pop {
+            animation: popIn 0.28s ease-out forwards;
+        }
+        /* Animasi halaman pengisian nama cacing */
+        @keyframes cardSlideUp {
+            0% { opacity: 0; transform: translateY(16px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .name-card-anim {
+            animation: cardSlideUp 0.28s ease-out forwards;
+        }
+        /* Animasi Intro Pembuka RJRM.GAMES */
+        @keyframes logoReveal {
+            0% {
+                opacity: 0;
+                transform: scale(0.55) translateY(14px);
+                letter-spacing: 0.45em;
+                filter: blur(6px);
+            }
+            65% {
+                opacity: 1;
+                transform: scale(1.06) translateY(0);
+                letter-spacing: 0.12em;
+                filter: blur(0);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+                letter-spacing: 0.08em;
+                filter: blur(0);
+            }
+        }
+        @keyframes neonPulse {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(74, 222, 128, 0.8), 0 0 24px rgba(250, 204, 21, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 18px rgba(74, 222, 128, 1), 0 0 38px rgba(250, 204, 21, 0.9);
+            }
+        }
+        @keyframes loadingFill {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        @keyframes subtitleFade {
+            0%, 35% { opacity: 0; transform: translateY(6px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .rjrm-logo-anim {
+            animation: logoReveal 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+                       neonPulse 1.6s ease-in-out infinite 0.95s;
+        }
+        .rjrm-sub-anim {
+            animation: subtitleFade 1.1s ease-out forwards;
+        }
+        .rjrm-bar-fill {
+        /* Tombol D-Pad kontrol layar sentuh mobile yang diperbesar & elegan */
+        .d-pad-btn {
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.92) 0%, rgba(15, 23, 42, 0.96) 100%);
+            border: 1.5px solid rgba(148, 163, 184, 0.28);
+            border-radius: 1.15rem;
+            color: #f8fafc;
+            font-size: 1.7rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 72px;
+            height: 72px;
+            padding: 0.5rem;
+            user-select: none;
+            touch-action: manipulation;
+            box-shadow: 0 10px 20px -6px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            transition: background-color 0.12s ease, transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+        }
+        .d-pad-btn:active,
+        .d-pad-btn.d-pad-pressed {
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.88) 0%, rgba(5, 150, 105, 0.95) 100%);
+            border-color: rgba(167, 243, 208, 0.75);
+            box-shadow: 0 0 18px rgba(16, 185, 129, 0.45);
+            transform: scale(0.94);
+        }
+    </style>
+</head>
+<body class="min-h-screen w-screen flex flex-col items-center justify-center text-slate-100 p-3 select-none">
+
+    <!-- Layar Intro Pembuka (Splash Screen) -->
+    <div id="introSplash" class="fixed inset-0 bg-slate-950/95 flex flex-col items-center justify-center z-50 p-6 text-center cursor-pointer backdrop-blur-md">
+        <div class="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-400/25 text-[11px] font-semibold tracking-widest uppercase text-emerald-300 mb-5">
+            Arcade Studio • Official Edition
+        </div>
+        <div class="text-4xl sm:text-5xl mb-4 animate-bounce">🐍🎮</div>
+        <div class="rjrm-logo-anim pixel-font text-2xl sm:text-4xl font-bold bg-gradient-to-r from-emerald-300 via-amber-200 to-emerald-400 bg-clip-text text-transparent">
+            RJRM.GAMES
+        </div>
+        <p class="rjrm-sub-anim text-xs sm:text-sm text-slate-400 tracking-widest uppercase mt-3">
+            PRESENTS • CACING BELAKANG RUMAH
+        </p>
+        <div class="w-56 sm:w-64 h-2 bg-slate-800/90 rounded-full overflow-hidden mt-7 border border-slate-700/80">
+            <div class="rjrm-bar-fill h-full bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 rounded-full"></div>
+        </div>
+        <span class="rjrm-sub-anim text-[11px] text-slate-500 mt-3">Klik layar untuk melewati</span>
+    </div>
+
+    <!-- Header & Skor -->
+    <div class="mb-3 text-center w-full max-w-md">
+        <h1 class="text-xl sm:text-2xl font-bold mb-2.5 tracking-wide bg-gradient-to-r from-amber-200 via-yellow-300 to-emerald-300 bg-clip-text text-transparent pixel-font">
+            CACING CACINGAN 💩
+        </h1>
+        <div class="flex flex-wrap justify-center gap-2 text-xs sm:text-sm font-semibold">
+            <div class="glass-panel px-3.5 py-1.5 rounded-full">
+                Skor: <span id="score" class="text-emerald-400 font-bold">0</span>
+            </div>
+            <div class="glass-panel px-3.5 py-1.5 rounded-full">
+                Tertinggi: <span id="highScore" class="text-amber-300 font-bold">0</span>
+            </div>
+            <div id="tempoBadge" class="bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 px-3.5 py-1.5 rounded-full shadow-md transition-all duration-300">
+                🐢 Tempo: Lambat
+            </div>
+            <!-- Tombol Ganti Nama Cacing -->
+            <button id="editNameBtn" type="button" class="bg-slate-800/85 hover:bg-slate-700/90 text-amber-200 border border-amber-400/30 px-3 py-1.5 rounded-full shadow-md transition cursor-pointer">
+                🐍 Nama: <span id="headerWormName" class="font-bold text-amber-300">Cacing Toilet</span> ✏️
+            </button>
+            <button id="musicBtn" type="button" class="bg-slate-800/85 hover:bg-slate-700/90 text-indigo-200 border border-indigo-400/30 px-3 py-1.5 rounded-full shadow-md transition cursor-pointer">
+                🎵 Musik: ON
+            </button>
+        </div>
+        <div id="doubleScoreBadge" class="mt-2 text-xs font-bold text-amber-200 bg-amber-950/80 border border-amber-400/50 rounded-full px-3.5 py-0.5 inline-block hidden animate-pulse">
+            ✨ BONUS SKOR 2X AKTIF! ✨
+        </div>
+        <!-- Banner Dukungan Semangat Manis Saat Makan -->
+        <div id="sweetCheerBanner" class="mt-2 text-xs font-semibold text-pink-200 bg-gradient-to-r from-pink-950/80 via-rose-900/75 to-amber-950/80 border border-pink-400/35 rounded-full px-3.5 py-1 inline-block opacity-0 transition-all duration-300 pointer-events-none">
+            💖 Semangat manis! Terus melaju!
+        </div>
+    </div>
+
+    <!-- Area Game -->
+    <div id="game-container">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+        <!-- Halaman / Layar Pengisian Nama Cacing -->
+        <div id="wormNameScreen" class="absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center rounded-2xl backdrop-blur-md z-30 p-5 text-center hidden">
+            <div class="name-card-anim glass-panel w-full max-w-xs rounded-2xl p-5">
+                <div class="text-4xl mb-2">🐍🏷️</div>
+                <h2 class="text-sm sm:text-base font-bold text-amber-300 mb-1.5 pixel-font leading-relaxed">NAMA CACING</h2>
+                <p class="text-xs text-slate-300 mb-4">kasi nama kop cacing, baru dia beraksi makan tai!</p>
+
+                <label for="wormNameInput" class="block text-left text-[11px] font-semibold text-slate-400 mb-1.5">
+                    Nama Cacing (maks. 16 karakter)
+                </label>
+                <input
+                    id="wormNameInput"
+                    type="text"
+                    maxlength="16"
+                    placeholder="Contoh: Si Belut Emas"
+                    autocomplete="off"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 text-white border border-slate-700 focus:border-emerald-400 focus:outline-none text-sm font-semibold mb-2 transition"
+                />
+                <p id="wormNameFeedback" class="text-[11px] text-rose-400 min-h-[16px] mb-3 text-left"></p>
+
+                <!-- Pilihan Nama Cepat -->
+                <div class="flex flex-wrap justify-center gap-1.5 mb-4">
+                    <button type="button" data-preset="Cacing Toilet" class="worm-preset-btn text-[11px] px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-600/60 cursor-pointer transition">
+                        viko
+                    </button>
+                    <button type="button" data-preset="Si Belut Kilat" class="worm-preset-btn text-[11px] px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-600/60 cursor-pointer transition">
+                        carly
+                    </button>
+                    <button type="button" data-preset="rilan ganteng" class="worm-preset-btn text-[11px] px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-600/60 cursor-pointer transition">
+                        rilan ganteng
+                    </button>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <button id="saveNamePlayBtn" type="button" class="w-full bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-bold py-3 px-4 rounded-xl shadow-lg transform transition hover:scale-[1.02] pixel-font text-[11px] cursor-pointer">
+                        SIMPAN & GASSSSSSSS
+                    </button>
+                    <button id="saveNameOnlyBtn" type="button" class="w-full bg-slate-800/90 hover:bg-slate-700 text-slate-200 font-semibold py-2 px-4 rounded-xl border border-slate-600/60 text-xs cursor-pointer transition">
+                        Simpan Nama Sa
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layar Mulai -->
+        <div id="startScreen" class="absolute inset-0 bg-slate-950/75 flex flex-col items-center justify-center rounded-2xl backdrop-blur-md z-20 p-4 text-center">
+            <div class="glass-panel rounded-2xl px-5 py-6 max-w-xs w-full flex flex-col items-center">
+                <div class="text-4xl mb-2 animate-bounce">🐍💩</div>
+                <div class="mb-3 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-400/30 text-xs text-emerald-300 font-semibold">
+                    Cacing Kamu: <span id="startWormName" class="text-amber-300 font-bold">Cacing Toilet</span>
+                </div>
+                <h2 class="text-lg font-bold text-emerald-300 mb-2 pixel-font">SIAP MAKAN?</h2>
+                <p class="text-xs text-slate-300 mb-4">pake ni tombol Panah / WASD atau tombol layar untuk kasi arah kop cacing.</p>
+                <div class="flex flex-col sm:flex-row items-center gap-2.5 w-full justify-center">
+                    <button id="startBtn" type="button" class="bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-bold py-3 px-5 rounded-full shadow-lg transform transition hover:scale-105 pixel-font text-[11px] cursor-pointer">
+                        MULAI MAIN SUU
+                    </button>
+                    <button id="openNameFromStartBtn" type="button" class="bg-slate-800/90 hover:bg-slate-700 text-amber-200 font-semibold py-2.5 px-4 rounded-full border border-amber-400/35 text-xs cursor-pointer transition">
+                        ✏️ Ubah Nama
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layar Game Over -->
+        <div id="gameOverScreen" class="absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center rounded-2xl hidden backdrop-blur-md z-20 p-4 text-center">
+            <div class="glass-panel rounded-2xl px-6 py-6 max-w-xs w-full flex flex-col items-center">
+                <h2 class="text-lg sm:text-xl font-bold text-rose-400 mb-1.5 pixel-font leading-relaxed">KALAH SU, DASAR BOT</h2>
+                <p class="text-xs text-emerald-300 font-semibold mb-2">
+                    Cacing: <span id="gameOverWormName" class="text-amber-300 font-bold">Cacing Toilet</span>
+                </p>
+                <p class="text-xs text-slate-300 mb-1">Skor Akhir Kamu:</p>
+                <p id="finalScore" class="font-bold text-amber-300 text-3xl mb-5">0</p>
+                <button id="restartBtn" type="button" class="bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-bold py-3 px-5 rounded-full shadow-lg transform transition hover:scale-105 pixel-font text-[11px] cursor-pointer">
+                    MAIN LAGI SU, SERU TOO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legenda / Panduan Item -->
+    <div class="mt-2.5 w-full max-w-[400px] glass-panel rounded-2xl p-2.5 text-xs">
+        <div class="grid grid-cols-2 gap-1.5 text-slate-200">
+            <div class="flex items-center gap-1.5 bg-slate-900/70 border border-slate-700/50 p-1.5 rounded-xl">
+                <span class="text-base">💩</span>
+                <div><span class="font-bold text-emerald-400">+10</span> <span class="text-slate-400">Normal</span></div>
+            </div>
+            <div class="flex items-center gap-1.5 bg-slate-900/70 border border-slate-700/50 p-1.5 rounded-xl">
+                <span class="text-base">🪰</span>
+                <div><span class="font-bold text-amber-300">+30</span> <span class="text-slate-400">Emas Cepat</span></div>
+            </div>
+            <div class="flex items-center gap-1.5 bg-slate-900/70 border border-slate-700/50 p-1.5 rounded-xl">
+                <span class="text-base">🧻</span>
+                <div><span class="font-bold text-pink-400">+15</span> <span class="text-slate-400">Ekor -2</span></div>
+            </div>
+            <div class="flex items-center gap-1.5 bg-slate-900/70 border border-slate-700/50 p-1.5 rounded-xl">
+                <span class="text-base">🚽</span>
+                <div><span class="font-bold text-yellow-300">+50</span> <span class="text-slate-400">Poin 2x</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kontrol D-Pad Mobile Diperbesar & Sedikit Dinaikkan -->
+    <div class="mt-2 mb-1 grid grid-cols-3 gap-4 sm:gap-5 place-items-center w-68 sm:w-auto sm:hidden">
+        <div></div>
+        <button type="button" class="d-pad-btn m-0.5" id="btn-up" aria-label="Atas">⬆️</button>
+        <div></div>
+        <button type="button" class="d-pad-btn m-0.5" id="btn-left" aria-label="Kiri">⬅️</button>
+        <button type="button" class="d-pad-btn m-0.5" id="btn-down" aria-label="Bawah">⬇️</button>
+        <button type="button" class="d-pad-btn m-0.5" id="btn-right" aria-label="Kanan">➡️</button>
+    </div>
+
+    <script>
+        // Referensi elemen UI utama
+        const introSplash = document.getElementById("introSplash");
+        const gameContainer = document.getElementById("game-container");
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreElement = document.getElementById("score");
+        const highScoreElement = document.getElementById("highScore");
+        const tempoBadge = document.getElementById("tempoBadge");
+        const musicBtn = document.getElementById("musicBtn");
+        const doubleScoreBadge = document.getElementById("doubleScoreBadge");
+        const sweetCheerBanner = document.getElementById("sweetCheerBanner");
+        const startScreen = document.getElementById("startScreen");
+        const gameOverScreen = document.getElementById("gameOverScreen");
+        const finalScoreElement = document.getElementById("finalScore");
+        const startBtn = document.getElementById("startBtn");
+        const restartBtn = document.getElementById("restartBtn");
+
+        // Referensi elemen halaman nama cacing
+        const wormNameScreen = document.getElementById("wormNameScreen");
+        const wormNameInput = document.getElementById("wormNameInput");
+        const wormNameFeedback = document.getElementById("wormNameFeedback");
+        const saveNamePlayBtn = document.getElementById("saveNamePlayBtn");
+        const saveNameOnlyBtn = document.getElementById("saveNameOnlyBtn");
+        const editNameBtn = document.getElementById("editNameBtn");
+        const openNameFromStartBtn = document.getElementById("openNameFromStartBtn");
+        const headerWormName = document.getElementById("headerWormName");
+        const startWormName = document.getElementById("startWormName");
+        const gameOverWormName = document.getElementById("gameOverWormName");
+        const presetButtons = document.querySelectorAll(".worm-preset-btn");
+
+        // Konfigurasi grid dan tingkat kecepatan berdasarkan skor
+        const gridSize = 20;
+        const tileCount = Math.floor(canvas.width / gridSize);
+
+        const TEMPO_TIERS = [
+            {
+                id: 'slow',
+                minScore: 0,
+                speed: 170,
+                label: '🐢 Tempo: Lambat',
+                banner: 'TEMPO: LAMBAT',
+                badgeClass: 'bg-emerald-900 bg-opacity-80 text-emerald-300 border-emerald-500',
+                color: '#6ee7b7'
+            },
+            {
+                id: 'medium',
+                minScore: 50,
+                speed: 130,
+                label: '🚶 Tempo: Lumayan',
+                banner: 'TEMPO: LUMAYAN!',
+                badgeClass: 'bg-sky-900 bg-opacity-80 text-sky-300 border-sky-500',
+                color: '#7dd3fc'
+            },
+            {
+                id: 'fast',
+                minScore: 100,
+                speed: 100,
+                label: '🏃 Tempo: Cepat',
+                banner: 'TEMPO: CEPAT!',
+                badgeClass: 'bg-amber-900 bg-opacity-80 text-amber-300 border-amber-500',
+                color: '#fcd34d'
+            },
+            {
+                id: 'very_fast',
+                minScore: 150,
+                speed: 70,
+                label: '⚡ Tempo: Sangat Cepat',
+                banner: 'TEMPO: SANGAT CEPAT!',
+                badgeClass: 'bg-orange-900 bg-opacity-80 text-orange-300 border-orange-500',
+                color: '#fdba74'
+            },
+            {
+                id: 'turbo',
+                minScore: 500,
+                speed: 48,
+                label: '🔥 Tempo: TURBO',
+                banner: 'MODE TURBO AKTIF! 🔥',
+                badgeClass: 'bg-red-900 bg-opacity-90 text-red-200 border-red-500 animate-pulse',
+                color: '#fca5a5'
+            }
+        ];
+
+        const FOOD_TYPES = [
+            { id: 'poop', emoji: '💩', points: 10, weight: 55, color: '#68d391', label: '+10' },
+            { id: 'fly', emoji: '🪰', points: 30, weight: 15, color: '#fbbf24', label: '+30 EMAS!' },
+            { id: 'tissue', emoji: '🧻', points: 15, weight: 18, color: '#f687b3', label: '+15 Ekor -2!' },
+            { id: 'toilet', emoji: '🚽', points: 50, weight: 12, color: '#f6e05e', label: '+50 POIN 2X!' }
+        ];
+
+        // Status permainan
+        let isIntroActive = true;
+        let isNameScreenOpen = false;
+        let wasRunningBeforeNameEdit = false;
+        let currentTier = TEMPO_TIERS[0];
+        let gameSpeed = currentTier.speed;
+        let gameLoopId = null;
+        let deathAnimId = null;
+        let isGameRunning = false;
+        let isDying = false;
+
+        const DEFAULT_WORM_NAME = "Cacing Toilet";
+        let wormName = DEFAULT_WORM_NAME;
+
+        let snake = [];
+        let lastValidHead = { x: 10 * gridSize, y: 10 * gridSize };
+        let dx = 0;
+        let dy = 0;
+        let currentFood = { x: 0, y: 0, type: FOOD_TYPES[0], expiresAt: null };
+        let score = 0;
+        let highScore = 0;
+        let changingDirection = false;
+        let floatingTexts = [];
+        let crashParticles = [];
+        let redFlashAlpha = 0;
+        let tickCount = 0;
+        let isDoubleScore = false;
+        let doubleScoreTimeout = null;
+        let sweetCheerTimeout = null;
+
+        // Kumpulan dukungan semangat manis berdasarkan jenis makanan
+        const SWEET_CHEERS = {
+            poop: [
+                "Manis banget langkahmu, {name}! Terus melaju ya! 💖",
+                "Hebat sayang, suapan manis pertama yang bikin makin kuat! ✨",
+                "Pelan-pelan tapi pasti manis, {name} pasti bisa! 🌸"
+            ],
+            fly: [
+                "Wah, lincah dan manis sekali {name}! Emasnya kena! 🍯✨",
+                "Keren manis, gercep banget ngejar si emas! 💛",
+                "Manisnya dapet, poinnya juga ngebut! Terus {name}! 🌟"
+            ],
+            tissue: [
+                "Segar dan manis! Ekor ringan, {name} makin lincah! 🎀",
+                "Bersih manis! Napas lega buat lanjut ngejar skor! 🌷",
+                "Manis banget pembersihannya, {name} makin gesit! 🍓"
+            ],
+            toilet: [
+                "Jackpot manis 2X! Kamu luar biasa, {name}! 👑💖",
+                "Manisnya kebangetan! Waktunya panen skor ganda! ✨🍯",
+                "Wah manis sekali, {name} lagi on fire! Teruskan! 🎉"
+            ]
+        };
+
+        function showSweetCheer(foodId) {
+            if (!sweetCheerBanner) return;
+            const pool = SWEET_CHEERS[foodId] || SWEET_CHEERS.poop;
+            const template = pool[Math.floor(Math.random() * pool.length)];
+            const message = template.replace(/\{name\}/g, wormName || DEFAULT_WORM_NAME);
+
+            sweetCheerBanner.innerText = message;
+            sweetCheerBanner.classList.remove("opacity-0", "-translate-y-1");
+            sweetCheerBanner.classList.add("opacity-100", "translate-y-0");
+
+            if (sweetCheerTimeout) {
+                clearTimeout(sweetCheerTimeout);
+            }
+            sweetCheerTimeout = setTimeout(() => {
+                sweetCheerBanner.classList.remove("opacity-100", "translate-y-0");
+                sweetCheerBanner.classList.add("opacity-0", "-translate-y-1");
+            }, 2400);
+        }
+
+        function hideSweetCheer() {
+            if (sweetCheerTimeout) {
+                clearTimeout(sweetCheerTimeout);
+                sweetCheerTimeout = null;
+            }
+            if (sweetCheerBanner) {
+                sweetCheerBanner.classList.remove("opacity-100", "translate-y-0");
+                sweetCheerBanner.classList.add("opacity-0", "-translate-y-1");
+            }
+        }
+
+        try {
+            highScore = parseInt(localStorage.getItem('snakeToiletHighScore'), 10) || 0;
+            const savedName = (localStorage.getItem('snakeToiletWormName') || '').trim();
+            if (savedName) {
+                wormName = savedName.slice(0, 16);
+            }
+        } catch (err) {
+            highScore = 0;
+            wormName = DEFAULT_WORM_NAME;
+        }
+        highScoreElement.innerText = highScore;
+
+        function renderWormNameUI() {
+            headerWormName.innerText = wormName;
+            startWormName.innerText = wormName;
+            gameOverWormName.innerText = wormName;
+            wormNameInput.value = wormName;
+        }
+        renderWormNameUI();
+
+        function openWormNameScreen(autoOpenOnFirstVisit = false) {
+            if (isDying) return;
+            closeIntroSplash();
+            wasRunningBeforeNameEdit = isGameRunning;
+            if (isGameRunning) {
+                isGameRunning = false;
+                if (gameLoopId) {
+                    clearInterval(gameLoopId);
+                    gameLoopId = null;
+                }
+                stopBgm();
+            }
+            isNameScreenOpen = true;
+            wormNameFeedback.innerText = "";
+            wormNameInput.value = wormName;
+            wormNameScreen.classList.remove("hidden");
+            if (!autoOpenOnFirstVisit) {
+                setTimeout(() => {
+                    wormNameInput.focus();
+                    wormNameInput.select();
+                }, 60);
+            }
+        }
+
+        function closeWormNameScreen() {
+            isNameScreenOpen = false;
+            wormNameScreen.classList.add("hidden");
+            wormNameFeedback.innerText = "";
+        }
+
+        function applyWormNameFromInput() {
+            const cleaned = wormNameInput.value.replace(/\s+/g, " ").trim();
+            if (!cleaned) {
+                wormNameFeedback.innerText = "Nama cacing tidak boleh kosong ya!";
+                wormNameInput.focus();
+                return null;
+            }
+            const finalName = cleaned.slice(0, 16);
+            wormName = finalName;
+            try {
+                localStorage.setItem('snakeToiletWormName', wormName);
+            } catch (err) {
+                // Abaikan jika localStorage diblokir
+            }
+            renderWormNameUI();
+            return wormName;
+        }
+
+        presetButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const preset = btn.getAttribute("data-preset") || DEFAULT_WORM_NAME;
+                wormNameInput.value = preset.slice(0, 16);
+                wormNameFeedback.innerText = "";
+                wormNameInput.focus();
+            });
+        });
+
+        saveNameOnlyBtn.addEventListener("click", () => {
+            const saved = applyWormNameFromInput();
+            if (!saved) return;
+            closeWormNameScreen();
+            if (wasRunningBeforeNameEdit) {
+                isGameRunning = true;
+                restartLoop();
+                startBgm();
+            }
+        });
+
+        saveNamePlayBtn.addEventListener("click", () => {
+            const saved = applyWormNameFromInput();
+            if (!saved) return;
+            closeWormNameScreen();
+            initGame();
+        });
+
+        editNameBtn.addEventListener("click", () => {
+            if (isNameScreenOpen) {
+                closeWormNameScreen();
+                if (wasRunningBeforeNameEdit) {
+                    isGameRunning = true;
+                    restartLoop();
+                    startBgm();
+                }
+            } else {
+                openWormNameScreen(false);
+            }
+        });
+
+        openNameFromStartBtn.addEventListener("click", () => {
+            openWormNameScreen(false);
+        });
+
+        wormNameInput.addEventListener("keydown", (e) => {
+            e.stopPropagation();
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const saved = applyWormNameFromInput();
+                if (!saved) return;
+                closeWormNameScreen();
+                initGame();
+            } else if (e.key === "Escape") {
+                e.preventDefault();
+                closeWormNameScreen();
+                if (wasRunningBeforeNameEdit) {
+                    isGameRunning = true;
+                    restartLoop();
+                    startBgm();
+                }
+            }
+        });
+
+        // Penanganan layar intro RJRM.GAMES
+        function closeIntroSplash() {
+            if (!isIntroActive) return;
+            isIntroActive = false;
+            introSplash.classList.add("fade-out");
+            setTimeout(() => {
+                introSplash.classList.add("hidden");
+            }, 560);
+        }
+
+        const introTimer = setTimeout(() => {
+            closeIntroSplash();
+            let hasSeenNamePrompt = false;
+            try {
+                hasSeenNamePrompt = localStorage.getItem('snakeToiletHasNamed') === '1';
+            } catch (err) {
+                hasSeenNamePrompt = false;
+            }
+            if (!hasSeenNamePrompt) {
+                try {
+                    localStorage.setItem('snakeToiletHasNamed', '1');
+                } catch (err) {
+                    // Abaikan error storage
+                }
+                openWormNameScreen(true);
+            }
+        }, 2400);
+
+        introSplash.addEventListener("click", () => {
+            clearTimeout(introTimer);
+            closeIntroSplash();
+        });
+
+        // Sistem Web Audio API untuk efek suara dan musik chiptune
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        let bgmInterval = null;
+        let bgmIndex = 0;
+        let isMusicMuted = false;
+
+        const MELODY = [
+            392.00, 523.25, 659.25, 523.25,
+            587.33, 659.25, 587.33, 493.88,
+            523.25, 659.25, 783.99, 659.25,
+            587.33, 523.25, 493.88, 392.00
+        ];
+
+        const BASS = [
+            130.81, 0, 196.00, 0,
+            146.83, 0, 196.00, 0,
+            130.81, 0, 196.00, 0,
+            146.83, 0, 98.00, 0
+        ];
+
+        function initAudio() {
+            try {
+                if (!AudioContextClass) return;
+                if (!audioCtx) {
+                    audioCtx = new AudioContextClass();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            } catch (err) {
+                // Abaikan jika browser membatasi AudioContext
+            }
+        }
+
+        function playTone(freq, duration, type = 'square', volume = 0.03) {
+            if (!audioCtx || freq <= 0 || isMusicMuted) return;
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, now);
+
+                gain.gain.setValueAtTime(volume, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + duration + 0.01);
+            } catch (err) {
+                // Abaikan error pemutaran audio
+            }
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'poop' || type === 'fly') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(type === 'fly' ? 500 : 380, now);
+                    osc.frequency.exponentialRampToValueAtTime(750, now + 0.12);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                } else if (type === 'tissue') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(650, now);
+                    osc.frequency.exponentialRampToValueAtTime(220, now + 0.22);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+                    osc.start(now);
+                    osc.stop(now + 0.22);
+                } else if (type === 'toilet') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.08);
+                    osc.frequency.setValueAtTime(1046.50, now + 0.16);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'levelup') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(554.37, now + 0.07);
+                    osc.frequency.setValueAtTime(659.25, now + 0.14);
+                    osc.frequency.setValueAtTime(880, now + 0.21);
+                    gain.gain.setValueAtTime(0.22, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.42);
+                    osc.start(now);
+                    osc.stop(now + 0.42);
+                } else if (type === 'gameover') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(250, now);
+                    osc.frequency.linearRampToValueAtTime(90, now + 0.45);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+                    osc.start(now);
+                    osc.stop(now + 0.45);
+                }
+            } catch (err) {
+                // Abaikan error SFX
+            }
+        }
+
+        function stepBgm() {
+            if (!isGameRunning || isDying || !audioCtx || isMusicMuted) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const step = bgmIndex % MELODY.length;
+            const stepSec = Math.max(0.08, (gameSpeed * 1.15) / 1000);
+            playTone(MELODY[step], stepSec * 0.85, 'square', 0.025);
+            playTone(BASS[step], stepSec * 0.9, 'triangle', 0.04);
+            bgmIndex++;
+        }
+
+        function startBgm() {
+            stopBgm();
+            if (isMusicMuted) return;
+            bgmIndex = 0;
+            const intervalMs = Math.max(90, Math.round(gameSpeed * 1.15));
+            bgmInterval = setInterval(stepBgm, intervalMs);
+        }
+
+        function stopBgm() {
+            if (bgmInterval) {
+                clearInterval(bgmInterval);
+                bgmInterval = null;
+            }
+        }
+
+        musicBtn.addEventListener("click", () => {
+            initAudio();
+            isMusicMuted = !isMusicMuted;
+            musicBtn.innerText = isMusicMuted ? "🔇 Musik: OFF" : "🎵 Musik: ON";
+            if (isMusicMuted) {
+                stopBgm();
+            } else if (isGameRunning && !isDying) {
+                startBgm();
+            }
+        });
+
+        // Pengaturan tempo otomatis sesuai skor
+        function getTierForScore(currentScore) {
+            for (let i = TEMPO_TIERS.length - 1; i >= 0; i--) {
+                if (currentScore >= TEMPO_TIERS[i].minScore) {
+                    return TEMPO_TIERS[i];
+                }
+            }
+            return TEMPO_TIERS[0];
+        }
+
+        function updateTempoByScore(announce = true) {
+            const targetTier = getTierForScore(score);
+            const tierChanged = targetTier.id !== currentTier.id;
+
+            currentTier = targetTier;
+            gameSpeed = currentTier.speed;
+
+            tempoBadge.innerText = currentTier.label;
+            tempoBadge.className = `px-3.5 py-1.5 rounded-full shadow-md border transition-all duration-300 ${currentTier.badgeClass}`;
+
+            if (currentTier.id === 'turbo') {
+                canvas.classList.add('turbo-active');
+            } else {
+                canvas.classList.remove('turbo-active');
+            }
+
+            if (tierChanged) {
+                restartLoop();
+                if (isGameRunning && !isDying) {
+                    startBgm();
+                }
+                if (announce) {
+                    playSound('levelup');
+                    addFloatingText(canvas.width / 2, canvas.height / 2 - 20, currentTier.banner, currentTier.color, true);
+                }
+            }
+        }
+
+        function restartLoop() {
+            if (gameLoopId) clearInterval(gameLoopId);
+            gameLoopId = setInterval(gameLoop, gameSpeed);
+        }
+
+        // Inisialisasi dan mulai permainan
+        function initGame() {
+            closeIntroSplash();
+            closeWormNameScreen();
+            initAudio();
+
+            if (deathAnimId) {
+                cancelAnimationFrame(deathAnimId);
+                deathAnimId = null;
+            }
+            gameContainer.classList.remove("shake-active");
+            canvas.classList.remove("hit-flash");
+            gameOverScreen.classList.remove("game-over-pop");
+
+            snake = [
+                { x: 10 * gridSize, y: 10 * gridSize },
+                { x: 9 * gridSize, y: 10 * gridSize },
+                { x: 8 * gridSize, y: 10 * gridSize }
+            ];
+            lastValidHead = { ...snake[0] };
+
+            dx = gridSize;
+            dy = 0;
+            score = 0;
+            tickCount = 0;
+            floatingTexts = [];
+            crashParticles = [];
+            redFlashAlpha = 0;
+            scoreElement.innerText = score;
+            changingDirection = false;
+            isDying = false;
+            isGameRunning = true;
+
+            deactivateDoubleScore();
+            updateTempoByScore(false);
+            hideSweetCheer();
+
+            startScreen.classList.add("hidden");
+            gameOverScreen.classList.add("hidden");
+
+            spawnFood();
+            restartLoop();
+            startBgm();
+        }
+
+        // Loop utama game
+        function gameLoop() {
+            if (!isGameRunning || isDying) return;
+
+            tickCount++;
+            changingDirection = false;
+
+            updateFlyState();
+            moveSnake();
+
+            if (hasGameEnded()) {
+                triggerDeathAnimation();
+                return;
+            }
+
+            lastValidHead = { ...snake[0] };
+            clearCanvas();
+            drawGrid();
+            drawFood();
+            drawSnake();
+            drawWormNameTag();
+            updateAndDrawFloatingTexts();
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = "#2d3748";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+            ctx.lineWidth = 1;
+            for (let i = 0; i < tileCount; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * gridSize, 0);
+                ctx.lineTo(i * gridSize, canvas.height);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, i * gridSize);
+                ctx.lineTo(canvas.width, i * gridSize);
+                ctx.stroke();
+            }
+        }
+
+        function updateFlyState() {
+            if (currentFood.type.id === 'fly') {
+                if (currentFood.expiresAt && Date.now() > currentFood.expiresAt) {
+                    addFloatingText(currentFood.x + gridSize / 2, currentFood.y, "🪰 Kabur!", "#9ca3af");
+                    spawnFood();
+                    return;
+                }
+
+                if (tickCount % 4 === 0) {
+                    const dirs = [
+                        { x: gridSize, y: 0 },
+                        { x: -gridSize, y: 0 },
+                        { x: 0, y: gridSize },
+                        { x: 0, y: -gridSize }
+                    ];
+                    dirs.sort(() => Math.random() - 0.5);
+                    for (const d of dirs) {
+                        const nx = currentFood.x + d.x;
+                        const ny = currentFood.y + d.y;
+                        const insideBounds = nx >= 0 && nx < canvas.width && ny >= 0 && ny < canvas.height;
+                        const onSnake = snake.some(part => part.x === nx && part.y === ny);
+                        if (insideBounds && !onSnake) {
+                            currentFood.x = nx;
+                            currentFood.y = ny;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        function moveSnake() {
+            if (dx === 0 && dy === 0) return;
+
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            if (head.x === currentFood.x && head.y === currentFood.y) {
+                const eaten = currentFood.type;
+                const multiplier = isDoubleScore ? 2 : 1;
+                const gainedPoints = eaten.points * multiplier;
+
+                score += gainedPoints;
+                scoreElement.innerText = score;
+
+                if (score > highScore) {
+                    highScore = score;
+                    highScoreElement.innerText = highScore;
+                    try {
+                        localStorage.setItem('snakeToiletHighScore', String(highScore));
+                    } catch (err) {
+                        // Abaikan jika storage penuh atau diblokir
+                    }
+                }
+
+                playSound(eaten.id);
+                const textLabel = isDoubleScore ? `+${gainedPoints} (2X)` : `+${gainedPoints}`;
+                addFloatingText(head.x + gridSize / 2, head.y, textLabel, eaten.color);
+                showSweetCheer(eaten.id);
+
+                if (eaten.id === 'tissue') {
+                    for (let i = 0; i < 3; i++) {
+                        if (snake.length > 2) {
+                            snake.pop();
+                        }
+                    }
+                } else if (eaten.id === 'toilet') {
+                    activateDoubleScore();
+                }
+
+                updateTempoByScore(true);
+                spawnFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        function spawnFood() {
+            const totalWeight = FOOD_TYPES.reduce((sum, item) => sum + item.weight, 0);
+            let randomWeight = Math.random() * totalWeight;
+            let selectedType = FOOD_TYPES[0];
+
+            for (const item of FOOD_TYPES) {
+                if (randomWeight < item.weight) {
+                    selectedType = item;
+                    break;
+                }
+                randomWeight -= item.weight;
+            }
+
+            let newX = 0;
+            let newY = 0;
+            let isOnSnake = true;
+            let attempts = 0;
+
+            while (isOnSnake && attempts < 200) {
+                newX = Math.floor(Math.random() * tileCount) * gridSize;
+                newY = Math.floor(Math.random() * tileCount) * gridSize;
+                isOnSnake = snake.some(part => part.x === newX && part.y === newY);
+                attempts++;
+            }
+
+            currentFood = {
+                x: newX,
+                y: newY,
+                type: selectedType,
+                expiresAt: selectedType.id === 'fly' ? Date.now() + 7000 : null
+            };
+        }
+
+        function drawFood() {
+            ctx.save();
+            ctx.font = `${gridSize - 2}px Arial`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            if (currentFood.type.id === 'fly' || currentFood.type.id === 'toilet') {
+                ctx.shadowColor = "rgba(250, 204, 21, 0.9)";
+                ctx.shadowBlur = 10;
+            }
+
+            ctx.fillText(
+                currentFood.type.emoji,
+                currentFood.x + gridSize / 2,
+                currentFood.y + gridSize / 2 + 1
+            );
+            ctx.restore();
+        }
+
+        function drawRoundedSegment(x, y, size, radius) {
+            const r = Math.min(radius, size / 2);
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + size - r, y);
+            ctx.quadraticCurveTo(x + size, y, x + size, y + r);
+            ctx.lineTo(x + size, y + size - r);
+            ctx.quadraticCurveTo(x + size, y + size, x + size - r, y + size);
+            ctx.lineTo(x + r, y + size);
+            ctx.quadraticCurveTo(x, y + size, x, y + size - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function drawSnake(isDead = false) {
+            snake.forEach((part, index) => {
+                const isHead = index === 0;
+                if (isDead) {
+                    ctx.fillStyle = isHead ? "#f56565" : (index % 2 === 0 ? "#e53e3e" : "#fc8181");
+                } else {
+                    ctx.fillStyle = isHead ? "#48bb78" : (isDoubleScore ? "#ecc94b" : "#68d391");
+                }
+                ctx.strokeStyle = "#1a202c";
+                ctx.lineWidth = 1.5;
+
+                drawRoundedSegment(part.x + 1, part.y + 1, gridSize - 2, isHead ? 6 : 4);
+                ctx.fill();
+                ctx.stroke();
+
+                if (isHead) {
+                    if (isDead) {
+                        ctx.strokeStyle = "#1a202c";
+                        ctx.lineWidth = 2;
+                        const drawX = (cx, cy) => {
+                            ctx.beginPath();
+                            ctx.moveTo(cx - 2.5, cy - 2.5);
+                            ctx.lineTo(cx + 2.5, cy + 2.5);
+                            ctx.moveTo(cx + 2.5, cy - 2.5);
+                            ctx.lineTo(cx - 2.5, cy + 2.5);
+                            ctx.stroke();
+                        };
+                        drawX(part.x + 6, part.y + 7);
+                        drawX(part.x + 14, part.y + 7);
+                    } else {
+                        ctx.fillStyle = "white";
+                        ctx.beginPath();
+                        ctx.arc(part.x + 6, part.y + 7, 2.5, 0, Math.PI * 2);
+                        ctx.arc(part.x + 14, part.y + 7, 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.fillStyle = "black";
+                        ctx.beginPath();
+                        ctx.arc(part.x + 6, part.y + 7, 1.2, 0, Math.PI * 2);
+                        ctx.arc(part.x + 14, part.y + 7, 1.2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            });
+        }
+
+        // Menampilkan label nama cacing tepat di atas kepala cacing
+        function drawWormNameTag() {
+            if (!snake.length || !wormName) return;
+            const head = snake[0];
+            ctx.save();
+            ctx.font = "bold 11px 'Inter', sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+
+            const labelY = head.y > 18 ? head.y - 4 : head.y + gridSize + 15;
+            const centerX = Math.max(44, Math.min(canvas.width - 44, head.x + gridSize / 2));
+
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "rgba(17, 24, 39, 0.85)";
+            ctx.strokeText(wormName, centerX, labelY);
+
+            ctx.fillStyle = "#fde047";
+            ctx.fillText(wormName, centerX, labelY);
+            ctx.restore();
+        }
+
+        function createCrashParticles(x, y) {
+            const colors = ["#ef4444", "#f97316", "#facc15", "#68d391", "#ffffff"];
+            crashParticles = [];
+            for (let i = 0; i < 24; i++) {
+                const angle = (Math.PI * 2 * i) / 24 + (Math.random() - 0.5) * 0.3;
+                const speed = 1.5 + Math.random() * 4.2;
+                crashParticles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: 3 + Math.random() * 4,
+                    color: colors[i % colors.length],
+                    alpha: 1
+                });
+            }
+        }
+
+        function triggerDeathAnimation() {
+            isDying = true;
+            clearInterval(gameLoopId);
+            stopBgm();
+            deactivateDoubleScore();
+            hideSweetCheer();
+            playSound('gameover');
+
+            snake[0] = { ...lastValidHead };
+
+            const impactX = Math.max(10, Math.min(canvas.width - 10, lastValidHead.x + dx + gridSize / 2));
+            const impactY = Math.max(10, Math.min(canvas.height - 10, lastValidHead.y + dy + gridSize / 2));
+            createCrashParticles(impactX, impactY);
+            redFlashAlpha = 0.55;
+
+            gameContainer.classList.remove("shake-active");
+            void gameContainer.offsetWidth;
+            gameContainer.classList.add("shake-active");
+            canvas.classList.add("hit-flash");
+
+            let frames = 0;
+            const maxFrames = 36;
+
+            function animateDeath() {
+                frames++;
+                clearCanvas();
+                drawGrid();
+                drawFood();
+                drawSnake(true);
+
+                if (redFlashAlpha > 0) {
+                    ctx.save();
+                    ctx.fillStyle = `rgba(239, 68, 68, ${redFlashAlpha})`;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.restore();
+                    redFlashAlpha = Math.max(0, redFlashAlpha - 0.045);
+                }
+
+                for (let i = crashParticles.length - 1; i >= 0; i--) {
+                    const p = crashParticles[i];
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, p.alpha);
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vx *= 0.94;
+                    p.vy *= 0.94;
+                    p.alpha -= 0.03;
+                }
+
+                if (frames < maxFrames) {
+                    deathAnimId = requestAnimationFrame(animateDeath);
+                } else {
+                    gameContainer.classList.remove("shake-active");
+                    canvas.classList.remove("hit-flash");
+                    showGameOver();
+                }
+            }
+
+            deathAnimId = requestAnimationFrame(animateDeath);
+        }
+
+        function activateDoubleScore() {
+            isDoubleScore = true;
+            doubleScoreBadge.classList.remove("hidden");
+            if (doubleScoreTimeout) clearTimeout(doubleScoreTimeout);
+            doubleScoreTimeout = setTimeout(() => {
+                deactivateDoubleScore();
+            }, 8000);
+        }
+
+        function deactivateDoubleScore() {
+            isDoubleScore = false;
+            doubleScoreBadge.classList.add("hidden");
+            if (doubleScoreTimeout) {
+                clearTimeout(doubleScoreTimeout);
+                doubleScoreTimeout = null;
+            }
+        }
+
+        function addFloatingText(x, y, text, color, isBanner = false) {
+            floatingTexts.push({
+                x,
+                y,
+                text,
+                color,
+                alpha: 1,
+                isBanner
+            });
+        }
+
+        function updateAndDrawFloatingTexts() {
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const ft = floatingTexts[i];
+                ctx.save();
+                ctx.globalAlpha = ft.alpha;
+                ctx.fillStyle = ft.color;
+                ctx.font = ft.isBanner ? "bold 14px 'Press Start 2P', sans-serif" : "bold 12px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+
+                ft.y -= ft.isBanner ? 0.5 : 1;
+                ft.alpha -= ft.isBanner ? 0.02 : 0.035;
+
+                if (ft.alpha <= 0) {
+                    floatingTexts.splice(i, 1);
+                }
+            }
+        }
+
+        function hasGameEnded() {
+            const head = snake[0];
+            if (!head) return true;
+            const hitWall = head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height;
+            if (hitWall) return true;
+
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function showGameOver() {
+            isGameRunning = false;
+            isDying = false;
+            clearInterval(gameLoopId);
+            stopBgm();
+            deactivateDoubleScore();
+            finalScoreElement.innerText = score;
+            gameOverScreen.classList.remove("hidden");
+            gameOverScreen.classList.add("game-over-pop");
+        }
+
+        function setDirection(newDx, newDy) {
+            if (isIntroActive || isNameScreenOpen || !isGameRunning || isDying || changingDirection) return;
+            const goingUp = dy === -gridSize;
+            const goingDown = dy === gridSize;
+            const goingRight = dx === gridSize;
+            const goingLeft = dx === -gridSize;
+
+            if (newDx === -gridSize && !goingRight) {
+                dx = -gridSize;
+                dy = 0;
+                changingDirection = true;
+            } else if (newDy === -gridSize && !goingDown) {
+                dx = 0;
+                dy = -gridSize;
+                changingDirection = true;
+            } else if (newDx === gridSize && !goingLeft) {
+                dx = gridSize;
+                dy = 0;
+                changingDirection = true;
+            } else if (newDy === gridSize && !goingUp) {
+                dx = 0;
+                dy = gridSize;
+                changingDirection = true;
+            }
+        }
+
+        // Kontrol keyboard
+        document.addEventListener("keydown", (e) => {
+            const key = e.key.toLowerCase();
+            if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
+                e.preventDefault();
+            }
+
+            if (isIntroActive) {
+                if (key === "enter" || key === " ") {
+                    clearTimeout(introTimer);
+                    closeIntroSplash();
+                }
+                return;
+            }
+
+            if (isNameScreenOpen) {
+                if (key === "escape") {
+                    closeWormNameScreen();
+                    if (wasRunningBeforeNameEdit) {
+                        isGameRunning = true;
+                        restartLoop();
+                        startBgm();
+                    }
+                }
+                return;
+            }
+
+            if (key === "arrowleft" || key === "a") setDirection(-gridSize, 0);
+            else if (key === "arrowup" || key === "w") setDirection(0, -gridSize);
+            else if (key === "arrowright" || key === "d") setDirection(gridSize, 0);
+            else if (key === "arrowdown" || key === "s") setDirection(0, gridSize);
+            else if ((key === "enter" || key === " ") && !isGameRunning && !isDying) {
+                initGame();
+            }
+        });
+
+        // Bind tombol arah D-Pad agar responsif pada sentuhan maupun klik
+        function bindDirectionControl(buttonId, newDx, newDy) {
+            const btn = document.getElementById(buttonId);
+            if (!btn) return;
+
+            let handledByTouch = false;
+
+            btn.addEventListener("touchstart", (e) => {
+                e.preventDefault();
+                handledByTouch = true;
+                btn.classList.add("d-pad-pressed");
+                setDirection(newDx, newDy);
+            }, { passive: false });
+
+            btn.addEventListener("touchend", () => {
+                btn.classList.remove("d-pad-pressed");
+                setTimeout(() => {
+                    handledByTouch = false;
+                }, 150);
+            });
+
+            btn.addEventListener("touchcancel", () => {
+                btn.classList.remove("d-pad-pressed");
+                handledByTouch = false;
+            });
+
+            btn.addEventListener("click", () => {
+                if (!handledByTouch) {
+                    setDirection(newDx, newDy);
+                }
+            });
+        }
+
+        bindDirectionControl("btn-up", 0, -gridSize);
+        bindDirectionControl("btn-down", 0, gridSize);
+        bindDirectionControl("btn-left", -gridSize, 0);
+        bindDirectionControl("btn-right", gridSize, 0);
+
+        startBtn.addEventListener("click", initGame);
+        restartBtn.addEventListener("click", initGame);
+
+        // Gambar latar awal pada canvas sebelum permainan dimulai
+        clearCanvas();
+        drawGrid();
+    </script>
+</body>
+</html>
